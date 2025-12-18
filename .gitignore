@@ -18,3 +18,5 @@ yarn-error.log
 /.vscode
 /coverage
 /generated/prisma
+
+/generated/prisma

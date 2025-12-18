@@ -1,6 +1,6 @@
 {
   "include": [
-    "src/**/*"
+    "src/**/*",
   ],
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
@@ -10,10 +10,10 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
-    "target": "esnext",
-    "types": [],
+    "target": "es2023",
+    "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -44,5 +44,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "esModuleInterop": true,
+    
   }
 }
