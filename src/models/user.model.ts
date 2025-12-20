@@ -18,6 +18,11 @@ export type LoginUserRequest = {
   password: string;
 };
 
+export type UpdateUserRequest = {
+  password: string | undefined;
+  name: string | undefined;
+};
+
 export function toUserResponse(user: User): UserResponse {
   return {
     name: user.name,
