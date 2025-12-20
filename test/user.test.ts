@@ -121,7 +121,7 @@ describe("POST /api/users/current/update", () => {
 
   it("should reject update user if request is invalid", async () => {
     const response = await supertest(web)
-      .patch("/api/users/current")
+      .post("/api/users/current/update")
       .set("X-API-TOKEN", "test")
       .send({
         password: "",
@@ -135,7 +135,7 @@ describe("POST /api/users/current/update", () => {
 
   it("should reject update user if token is wrong", async () => {
     const response = await supertest(web)
-      .patch("/api/users/current")
+      .post("/api/users/current/update")
       .set("X-API-TOKEN", "salah")
       .send({
         password: "benar",
@@ -149,7 +149,7 @@ describe("POST /api/users/current/update", () => {
 
   it("should be able to update user name", async () => {
     const response = await supertest(web)
-      .patch("/api/users/current")
+      .post("/api/users/current/update")
       .set("X-API-TOKEN", "test")
       .send({
         name: "benar",
@@ -162,7 +162,7 @@ describe("POST /api/users/current/update", () => {
 
   it("should be able to update user password", async () => {
     const response = await supertest(web)
-      .patch("/api/users/current")
+      .post("/api/users/current/update")
       .set("X-API-TOKEN", "test")
       .send({
         password: "benar",
@@ -173,5 +173,38 @@ describe("POST /api/users/current/update", () => {
 
     const user = await UserTest.get();
     expect(await bcrypt.compare("benar", user.password)).toBe(true);
+  });
+});
+
+describe("POST /api/users/current/logout", () => {
+  beforeEach(async () => {
+    await UserTest.create();
+  });
+
+  afterEach(async () => {
+    await UserTest.delete();
+  });
+
+  it("should be able to logout", async () => {
+    const response = await supertest(web)
+      .post("/api/users/current/post")
+      .set("X-API-TOKEN", "test");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toBe("OK");
+
+    const user = await UserTest.get();
+    expect(user.token).toBeNull();
+  });
+
+  it("should reject logout user if token is wrong", async () => {
+    const response = await supertest(web)
+      .post("/api/users/current/post")
+      .set("X-API-TOKEN", "salah");
+
+    logger.debug(response.body);
+    expect(response.status).toBe(401);
+    expect(response.body.errors).toBeDefined();
   });
 });
