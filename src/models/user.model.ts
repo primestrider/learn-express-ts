@@ -1,3 +1,4 @@
+import type { Request } from "express";
 import type { User } from "../../generated/prisma/client";
 
 export type UserResponse = {
@@ -22,4 +23,8 @@ export function toUserResponse(user: User): UserResponse {
     name: user.name,
     username: user.username,
   };
+}
+
+export interface UserRequest extends Request {
+  user?: User;
 }

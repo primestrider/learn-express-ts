@@ -1,3 +1,4 @@
+import type { User } from "../../generated/prisma/client";
 import { prisma } from "../application/database";
 import { ResponseError } from "../error/response.error";
 import {
@@ -48,6 +49,11 @@ export class UserService {
     return toUserResponse(user);
   }
 
+  /**
+   * Login user
+   * @param request
+   * @returns UserResponse
+   */
   static async login(request: LoginUserRequest): Promise<UserResponse> {
     // validate and sanitize incoming request data
     const loginRequest = Validation.validate(UserValidation.LOGIN, request);
@@ -85,5 +91,14 @@ export class UserService {
 
     response.token = user.token!;
     return response;
+  }
+
+  /**
+   * Get current user
+   * @param user
+   * @returns UserResponse
+   */
+  static async get(user: User): Promise<UserResponse> {
+    return toUserResponse(user);
   }
 }
