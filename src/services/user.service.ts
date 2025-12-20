@@ -3,97 +3,87 @@ import { ResponseError } from "../error/response.error";
 import {
   toUserResponse,
   type CreateUserRequest,
+  type LoginUserRequest,
   type UserResponse,
 } from "../models/user.model";
 import { Validation } from "../validations";
 import { UserValidation } from "../validations/user.validation";
 import bcrypt from "bcrypt";
-
+import { v7 as uuidv7 } from "uuid";
 /**
- * UserService
- *
- * Service layer responsible for handling user-related business logic.
- * Uses static methods because:
- * - No internal state is required
- * - Easy to call from Express controllers
+ * UserService handles user-related business logic.
  */
 export class UserService {
   /**
-   * Register a new user
-   *
-   * Flow:
-   * 1. Validate request data using Zod
-   * 2. Check if the username already exists
-   * 3. Hash the password using bcrypt
-   * 4. Persist the user into the database
-   * 5. Return a safe user response (without password)
-   *
-   * @param request - Data required to create a new user
-   * @throws ResponseError if the username already exists
-   * @returns UserResponse
+   * Register a new user.
    */
   static async register(request: CreateUserRequest): Promise<UserResponse> {
-    /**
-     * Validate incoming request
-     *
-     * - Incoming data is untrusted (from client)
-     * - Zod validation ensures correct structure and types
-     * - Returns a fully typed and safe object
-     */
+    // Validate and sanitize incoming request data
     const registerRequest = Validation.validate(
       UserValidation.REGISTER,
       request
     );
 
-    /**
-     * Check if the username is already used
-     *
-     * Using `count` instead of `findFirst` because:
-     * - We only need to know whether a record exists
-     * - Slightly more efficient
-     */
+    // Check whether the username already exists
     const isUserExist = await prisma.user.findUnique({
       where: {
         username: registerRequest.username,
       },
     });
 
-    /**
-     * If username already exists, throw a controlled error
-     *
-     * - ResponseError carries HTTP status and message
-     * - Will be handled by global Express error middleware
-     */
+    // Throw error if username is already taken
     if (isUserExist) {
       throw new ResponseError(400, "username_exist");
     }
 
-    /**
-     * Hash the user's password before storing it
-     *
-     * - Plain text passwords must NEVER be stored
-     * - bcrypt with saltRounds = 10 is safe for production
-     */
+    // Hash password before saving to database
     registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
 
-    /**
-     * Persist the new user into the database
-     *
-     * Stored fields:
-     * - username
-     * - hashed password
-     * - name
-     */
+    // Create new user record in database
     const user = await prisma.user.create({
       data: registerRequest,
     });
 
-    /**
-     * Convert database entity to API response
-     *
-     * - Removes sensitive fields (password)
-     * - Shapes data for client consumption
-     */
+    // Map database entity to API response
     return toUserResponse(user);
+  }
+
+  static async login(request: LoginUserRequest): Promise<UserResponse> {
+    // validate and sanitize incoming request data
+    const loginRequest = Validation.validate(UserValidation.LOGIN, request);
+
+    let user = await prisma.user.findUnique({
+      where: {
+        username: loginRequest.username,
+      },
+    });
+
+    if (!user) {
+      throw new ResponseError(401, "username_password_is_wrong");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      request.password,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      throw new ResponseError(401, "username_password_is_wrong");
+    }
+
+    user = await prisma.user.update({
+      where: {
+        username: loginRequest.username,
+      },
+
+      data: {
+        token: uuidv7(),
+      },
+    });
+
+    const response = toUserResponse(user);
+
+    response.token = user.token!;
+    return response;
   }
 }
