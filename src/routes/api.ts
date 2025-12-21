@@ -13,3 +13,11 @@ apiRouter.post("/api/users/current/logout", UserController.logout);
 
 // Contact API
 apiRouter.post("/api/contacts/create", ContactController.create);
+apiRouter.get(
+  String.raw`/api/contacts/:contactId((\d+)`,
+  ContactController.get
+);
+apiRouter.post(
+  String.raw`/api/contacts/update/:contactId((\d+)`,
+  ContactController.update
+);
