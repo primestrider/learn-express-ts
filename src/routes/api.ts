@@ -21,3 +21,8 @@ apiRouter.post(
   String.raw`/api/contacts/update/:contactId((\d+)`,
   ContactController.update
 );
+
+apiRouter.post(
+  String.raw`/api/contacts/delete/:contactId((\d+)`,
+  ContactController.delete
+);
