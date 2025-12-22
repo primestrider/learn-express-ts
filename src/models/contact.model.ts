@@ -23,6 +23,14 @@ export type UpdateContactRequest = {
   phone?: string;
 };
 
+export type ListContactRequest = {
+  name?: string;
+  phone?: string;
+  email?: string;
+  page: number;
+  limit: number;
+};
+
 export function toContactResponse(contact: Contact): ContactResponse {
   return {
     id: contact.id,

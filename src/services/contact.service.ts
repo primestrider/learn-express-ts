@@ -6,8 +6,10 @@ import {
   toContactResponse,
   type ContactResponse,
   type CreateContactRequest,
+  type ListContactRequest,
   type UpdateContactRequest,
 } from "../models/contact.model";
+import type { ListResult } from "../models/pagination.model";
 import { Validation } from "../validations";
 import { ContactValidation } from "../validations/contact.validation";
 
@@ -91,5 +93,74 @@ export class ContactService {
     });
 
     return toContactResponse(contact);
+  }
+
+  static async list(
+    user: User,
+    request: ListContactRequest
+  ): Promise<ListResult<ContactResponse>> {
+    const contactListRequest = Validation.validate(
+      ContactValidation.LIST,
+      request
+    );
+
+    const skip = (contactListRequest.page - 1) * contactListRequest.limit;
+    const filters = [];
+
+    if (contactListRequest.name) {
+      filters.push({
+        OR: [
+          {
+            first_name: {
+              contains: contactListRequest.name,
+            },
+            last_name: {
+              contains: contactListRequest.name,
+            },
+          },
+        ],
+      });
+    }
+
+    if (contactListRequest.email) {
+      filters.push({
+        email: {
+          contains: contactListRequest.email,
+        },
+      });
+    }
+
+    if (contactListRequest.phone) {
+      filters.push({
+        phone: {
+          contains: contactListRequest.phone,
+        },
+      });
+    }
+
+    const contactResult = await prisma.contact.findMany({
+      where: {
+        username: user.username,
+        AND: filters,
+      },
+      take: contactListRequest.limit,
+      skip: skip,
+    });
+
+    const total = await prisma.contact.count({
+      where: {
+        username: user.username,
+        AND: filters,
+      },
+    });
+
+    return {
+      data: contactResult.map((contact) => toContactResponse(contact)),
+      paging: {
+        current_page: contactListRequest.page,
+        total_page: Math.ceil(total / contactListRequest.limit),
+        limit: contactListRequest.limit,
+      },
+    };
   }
 }
