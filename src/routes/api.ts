@@ -37,3 +37,15 @@ apiRouter.get(
   String.raw`/api/contacts/:contactId(\d+)/addresses/:addressId(\d+)`,
   AddressController.get
 );
+apiRouter.post(
+  String.raw`/api/contacts/:contactId(\d+)/addresses/:addressId(\d+)/update`,
+  AddressController.update
+);
+apiRouter.post(
+  String.raw`/api/contacts/:contactId(\d+)/addresses/:addressId(\d+)/delete`,
+  AddressController.remove
+);
+apiRouter.get(
+  String.raw`/api/contacts/:contactId(\d+)/addresses/list`,
+  AddressController.list
+);

@@ -2,6 +2,8 @@ import { z, ZodType } from "zod";
 import type {
   CreateAddressRequest,
   GetAddressRequest,
+  RemoveAddressRequest,
+  UpdateAddressRequest,
 } from "../models/address.model";
 
 export class AddressValidation {
@@ -19,12 +21,12 @@ export class AddressValidation {
     id: z.number().positive(),
   });
 
-  static readonly REMOVE: ZodType = z.object({
+  static readonly REMOVE: ZodType<RemoveAddressRequest, any, any> = z.object({
     contact_id: z.number().positive(),
     id: z.number().positive(),
   });
 
-  static readonly UPDATE: ZodType = z.object({
+  static readonly UPDATE: ZodType<UpdateAddressRequest, any, any> = z.object({
     id: z.number().positive(),
     contact_id: z.number().positive(),
     street: z.string().min(1).max(255).optional(),
