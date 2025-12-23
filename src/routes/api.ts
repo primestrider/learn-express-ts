@@ -30,6 +30,10 @@ apiRouter.get("/api/contacts/list", ContactController.list);
 
 // Address APi
 apiRouter.post(
-  String.raw`/api/address/create/:contactId((\d+)`,
+  String.raw`/api/contacts/:contactId(\d+)/addresses`,
   AddressController.create
+);
+apiRouter.get(
+  String.raw`/api/contacts/:contactId(\d+)/addresses/:addressId(\d+)`,
+  AddressController.get
 );
